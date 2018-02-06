@@ -1,0 +1,23 @@
+.floor {
+  height: 30px;
+  border: 1px solid #FAFAFA;
+}
+
+.floor button {
+    margin: 4px;
+    padding: 2px;
+    width: 60px;
+    font-size:16px;
+}
+
+.floor i {
+    font-weight: bold;
+}
+
+.floor button:hover {
+  background-color: #EEF;
+}
+
+.floor__button--active {
+    background-color: orange;
+}
