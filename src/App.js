@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { Provider } from 'react-redux'
 import { applyMiddleware, createStore } from 'redux';
-import reduxLogger from 'redux-logger'
+// import reduxLogger from 'redux-logger'
 import reduxThunk from 'redux-thunk';
 
 import Reducers from './Reducers'
@@ -20,7 +20,7 @@ const buildingFloors = [
 
 const store = createStore(
   Reducers,
-  applyMiddleware(reduxThunk, reduxLogger)
+  applyMiddleware(reduxThunk) //, reduxLogger)
 )
 
 class App extends Component {

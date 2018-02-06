@@ -15,6 +15,8 @@ export const PEOPLE_LEAVE = 'PEOPLE LEAVE'
 export const MOVE_UP = 'MOVE UP'
 export const MOVE_DOWN = 'MOVE DOWN'
 
+export const SET_DIRECTION = 'SET DIRECTION'
+
 // elevator status
 export const IDLE = 'IDLE'
 export const OPENING_DOORS = 'OPENING DOORS'

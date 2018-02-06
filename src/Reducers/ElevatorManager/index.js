@@ -6,14 +6,22 @@ const initialStateEM = {
   requestedStop: {}
 }
 
+const immutableDeleteKey = (object, key) => {
+  let obj = {...object}
+  delete(obj[key])
+  return {...obj}
+}
+
 const loadPeopleFromFloor = (state, floor) => ({
-  requestedUp: {...state.requestedUp, [floor]: 0},
-  requestedDown: {...state.requestedDown, [floor]: 0},
-  requestedStop: {...state.requestedStop, [floor]: 0},
+  requestedUp: immutableDeleteKey(state.requestedUp, floor),
+  requestedDown: immutableDeleteKey(state.requestedDown, floor),
+  requestedStop: immutableDeleteKey(state.requestedStop, floor)
 })
 
 const elevatorManager = (state = initialStateEM, action) => {
   const floor = action.floorNo
+
+  console.log('action: ' + action.type)
 
   switch (action.type) {
     case actions.OPEN_DOORS:

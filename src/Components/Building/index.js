@@ -2,6 +2,7 @@ import React from 'react'
 
 import Floor from '../Floor'
 import Elevator from '../Elevator'
+import ElevatorPanel from '../ElevatorPanel'
 
 export default ({ floors }) => (
   <div>
@@ -9,5 +10,6 @@ export default ({ floors }) => (
       {floors.map( (floor, index) => <Floor key={floor.no} floor={floor} /> )}
     </div>
     <Elevator />
+    <ElevatorPanel floors={floors} />
   </div>
 )
