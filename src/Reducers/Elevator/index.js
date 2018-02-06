@@ -10,15 +10,6 @@ const initialStateE = {
 
 const elevator = (state = initialStateE, action) => {
   switch (action.type) {
-    // case actions.requestFloor:
-    //   if (state.status === actions.IDLE) {
-    //     if (action.floor > state.floor) {
-    //       return { ...state, status: MOVING_UP }
-    //     } else if (action.floor < state.floor) {
-    //       return { ...state, status: MOVING_DOWN }
-    //     }
-    //   }
-    //   return state
     case actions.MOVE_UP:
       return { ...state, direction: actions.MOVE_UP }
     case actions.MOVE_DOWN:
