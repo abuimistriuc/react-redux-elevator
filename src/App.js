@@ -13,9 +13,7 @@ const buildingFloors = [
   { no: 3, name: '3'},
   { no: 2, name: '2'},
   { no: 1, name: '1'},
-  { no: 0, name: '0'},
-  { no: -1, name: '-1'},
-  { no: -2, name: '-2'}
+  { no: 0, name: '0'}
 ]
 
 const store = createStore(

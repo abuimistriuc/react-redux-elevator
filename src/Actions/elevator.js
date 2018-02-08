@@ -1,6 +1,5 @@
-import _ from 'lodash'
-
 import * as actions from './'
+import _ from 'lodash'
 
 const delay = 1000
 
@@ -83,24 +82,24 @@ export const setDirection = (direction) => ({
 })
 
 // simulate open/close doors with timeout
-export const openDoors = (floorNo) => ({
+export const openDoors = (floorNo, direction) => ({
   type: actions.OPEN_DOORS,
-  floorNo
+  floorNo,
+  direction
 })
 
 export const openDoorsRequest = () => (dispatch, getState) => {
   const floorNo = getState().elevator.floor
+  const direction = getState().elevator.direction
   elevatorTask(actions.OPENING_DOORS, dispatch, delay, false).then(() => {
-    dispatch(openDoors(floorNo))
+    dispatch(openDoors(floorNo, direction))
     dispatch(closeDoorsRequest())
   })
 }
 
-const closeDoors = () => (dispatch) => {
-  return ({
+const closeDoors = () => ({
     type: actions.CLOSE_DOORS
-  })
-}
+})
 
 export const closeDoorsRequest = () => (dispatch) => {
   elevatorTask(actions.CLOSING_DOORS, dispatch, delay).then(() => {
@@ -115,6 +114,7 @@ export const processRequests = () => (dispatchAction, getState) => {
   const state = getState()
 
   let dispatched = false;
+
   const dispatch = (action) => {
     if (!dispatched) {
       dispatchAction(action)
@@ -122,83 +122,56 @@ export const processRequests = () => (dispatchAction, getState) => {
     dispatched = true
   }
 
-  // get current elevator status and continue only if it's IDLE
   const floor = state.elevator.floor
   const status = state.elevator.status
   const direction = state.elevator.direction
 
-  const requestedUp = state.elevatorManager.requestedUp
-  const requestedDown = state.elevatorManager.requestedDown
-  const requestedStop = state.elevatorManager.requestedStop
+  const { requestedUp, requestedDown, requestedStop, waitingForStopRequest } = state.elevatorManager
 
-  if (status !== actions.IDLE || (!requestedUp && !requestedDown && !requestedStop)) {
+  const hasRequests = !_.isEmpty({...requestedUp,...requestedDown,...requestedStop})
+
+  if (status !== actions.IDLE || !hasRequests) {
     return
   }
 
-  // check if doors should open
+  console.log('process', {...requestedUp,...requestedDown,...requestedStop})
+
+  // check if doors should open to leave or load people
   // - floor in requestedSTOP
   // - floor in requestedUP and elevator moving UP
   // - floor in requestedDOWN and elevator moving UP
-  if (requestedUp[floor] || requestedDown[floor] || requestedStop[floor]) {
+  if (
+        (requestedUp[floor] && direction === actions.MOVE_UP)
+        || (requestedDown[floor] && direction === actions.MOVE_DOWN)
+        || requestedStop[floor]
+    ) {
     dispatch(openDoorsRequest(floor))
     return
+
+  // check if requests up
+  } else if (direction === actions.MOVE_UP) {
+    const maxFloorRequest = Math.max(0,...Object.keys(requestedStop), ...Object.keys(requestedDown), ...Object.keys(requestedUp))
+    if (floor < maxFloorRequest ) {
+      dispatch(moveUpRequest())
+      return
+    }
+  // check if requests down
+  } else if (direction === actions.MOVE_DOWN) {
+    const minFloorRequest = Math.min(100,...Object.keys(requestedStop), ...Object.keys(requestedDown), ...Object.keys(requestedUp))
+    if (floor > minFloorRequest) {
+      dispatch(moveDownRequest())
+      return
+    }
   }
 
-  // check in which direction we should go
-  // - first check if we have requestedSTOP or requestUP/DOWN in the same direction
-
-  // check for stop or request to continue up
-  if (direction === actions.MOVE_UP) {
-    _.forEach(requestedStop, (value, key) => {
-      if (value && key > floor) {
-        dispatch(moveUpRequest())
-      }
-    })
-
-    _.forEach(requestedUp, (value, key) => {
-      if (value && key > floor) {
-        dispatch(moveUpRequest())
-      }
-    })
+  if (hasRequests && !waitingForStopRequest) {
+    if (direction === actions.MOVE_UP) {
+      dispatch(setDirection(actions.MOVE_DOWN))
+    } else {
+      dispatch(setDirection(actions.MOVE_UP))
+    }
+    setTimeout(() => dispatchAction(processRequests()), 1000)
   }
 
-  // check for stop or request to continue down
-  if (direction === actions.MOVE_DOWN) {
-    _.forEach(requestedStop, (value, key) => {
-      if (value && key < floor) {
-        dispatch(moveDownRequest())
-      }
-    })
-
-    _.forEach(requestedDown, (value, key) => {
-      if (value && key < floor) {
-        dispatch(moveDownRequest())
-      }
-    })
-  }
-
-  // if the elevator is down and no people are tryint to go up
-  // we need to move the elevator up if there are people trying to get down
-  const maxFloorRequestDown = Math.max(...[Object.keys(requestedDown)])
-  if (floor < maxFloorRequestDown ) {
-    dispatchAction(setDirection(actions.MOVE_UP))
-    dispatch(requestStop(maxFloorRequestDown))
-  }
-
-  const minFloorRequestUp = Math.min(...[Object.keys(requestedUp)])
-  if (floor < minFloorRequestUp ) {
-    dispatchAction(setDirection(actions.MOVE_DOWN))
-    dispatch(requestStop(minFloorRequestUp))
-  }
-
-  if (direction === actions.MOVE_UP) {
-    dispatch(setDirection(actions.MOVE_DOWN))
-  } else {
-    dispatch(setDirection(actions.MOVE_UP))
-  }
-
-  setTimeout(() => dispatch(processRequests()), 10)
-
-  // - check if there is a requestSTOP or requestUP/DOWN in the other direction
 
 }

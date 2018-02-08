@@ -9,9 +9,6 @@ const initialStateE = {
 }
 
 const elevator = (state = initialStateE, action) => {
-  
-  console.log('status:' + state.status)
-
   switch (action.type) {
     case actions.SET_DIRECTION:
       return { ...state, direction: action.direction }
